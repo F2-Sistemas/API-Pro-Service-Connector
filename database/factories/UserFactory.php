@@ -29,6 +29,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'phone_country' => 'BR',
+            'phone_number' => fake()->regexify('9([1-9]){10}'),
+            'phone_sms_verified_at' => now(),
         ];
     }
 
