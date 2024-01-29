@@ -7,6 +7,7 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\ProfessionalProject;
+use App\Models\ProjectCategory;
 
 class ProjectsController extends Controller
 {
@@ -74,5 +75,17 @@ class ProjectsController extends Controller
         abort_unless($professionalProject, 404);
 
         return response()->json($professionalProject);
+    }
+
+    public function categoryIndex(Request $request)
+    {
+        return response()->json(
+            cache()->remember(
+                md5(__METHOD__),
+                60 * 30,
+                fn () => ProjectCategory::orderBy('title')
+                    ->paginate(50),
+            )
+        );
     }
 }

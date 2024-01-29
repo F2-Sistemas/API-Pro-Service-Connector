@@ -16,4 +16,7 @@ Route::prefix('professional')
             Route::get('/released/{projectId}', [ProjectsController::class, 'showProfessionalProject'])
                 ->name('released');
         });
+        Route::prefix('category')->name('category.')->group(function () {
+            Route::get('/', [ProjectsController::class, 'categoryIndex'])->name('index');
+        });
     });

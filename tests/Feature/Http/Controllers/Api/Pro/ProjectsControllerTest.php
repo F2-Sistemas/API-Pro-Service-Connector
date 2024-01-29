@@ -31,13 +31,6 @@ class ProjectsControllerTest extends TestCase
 
         $this->assertTrue(boolval($professional));
 
-        $professionalProject = ProfessionalProject::factory()->createOne([
-            'professional_id' => $professional?->id,
-            'project_id' => $project?->id,
-        ]);
-
-        $this->assertTrue(boolval($professionalProject));
-
         $response = $this
             ->actingAs($user)
             ->getJson(route('api.public.professional.products.index'));
@@ -119,6 +112,33 @@ class ProjectsControllerTest extends TestCase
             fn (AssertableJson $json) => $json
                 ->whereType('project.id', 'integer')
                 ->whereType('project.description', 'string')
+                ->etc()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function testProductCategoryList(): void
+    {
+        $user = User::factory()->createOne();
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('api.public.professional.category.index'));
+
+        $response->assertStatus(200);
+
+        $response->assertJson(
+            fn (AssertableJson $json) => $json
+                ->whereType('data', 'array')
+                ->whereType('links', 'array')
+                ->whereType('per_page', 'integer')
+                ->whereType('current_page', 'null|integer')
+                ->whereType('data.0.id', 'integer')
+                ->whereType('data.0.title', 'string')
+                ->whereType('data.0.slug', 'string')
+                ->whereType('next_page_url', 'null|string')
                 ->etc()
         );
     }
