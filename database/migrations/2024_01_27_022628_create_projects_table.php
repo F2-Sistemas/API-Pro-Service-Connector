@@ -25,6 +25,9 @@ return new class() extends Migration {
             $table->json('extra_info')->nullable();
             $table->string('coin_price')->nullable()->index();
             $table->string('percent_discount_applied')->nullable()->index();
+            $table->string('country_code')->nullable()->index();
+            $table->string('city_code')->nullable()->index();
+            $table->string('zip_code')->nullable()->index();
             $table->boolean('promoted')->nullable()->index();
             $table->timestamps();
             $table->softDeletes();

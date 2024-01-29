@@ -40,6 +40,9 @@ class Project extends Model
         'coin_price',
         'percent_discount_applied',
         'promoted',
+        'country_code',
+        'city_code',
+        'zip_code',
     ];
 
     /**
