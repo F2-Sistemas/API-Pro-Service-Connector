@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\ProjectStatus;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -56,6 +57,10 @@ class Project extends Model
         'prioritize_qualified_professionals',
     ];
 
+    protected $appends = [
+        'priceWithDiscount',
+    ];
+
     /**
      * The attributes that should be cast.
      *
@@ -70,6 +75,7 @@ class Project extends Model
         'percent_discount_applied' => 'integer',
         'promoted' => 'boolean',
         'prioritize_qualified_professionals' => 'boolean',
+        'priceWithDiscount' => 'integer',
     ];
 
     public function scopeActiveOnly(Builder $query)
@@ -106,5 +112,35 @@ class Project extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProjectCategory::class, 'project_category_id', 'id');
+    }
+
+    /**
+     * Get all of the professionalProject for the Project
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function professionalProject(): HasMany
+    {
+        return $this->hasMany(ProfessionalProject::class, 'project_id', 'id');
+    }
+
+    public function getPriceWithDiscountAttribute()
+    {
+        $discount = $this->percent_discount_applied;
+        $discount = $discount > 0 && $discount <= 100 ? $discount : null;
+
+        if (!$discount) {
+            return intval($this->coin_price);
+        }
+
+        return intval($this->coin_price - ($this->coin_price / 100 * $discount));
+    }
+
+    public function enterCoinIsValid(int $coin)
+    {
+        return in_array($coin, [
+            $this->getPriceWithDiscountAttribute(),
+            $this->coin_price,
+        ]);
     }
 }

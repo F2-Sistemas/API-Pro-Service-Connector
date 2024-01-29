@@ -55,6 +55,77 @@ class ProjectsController extends Controller
         return response()->json($project);
     }
 
+    public function projectRelease(Request $request, int|string $projectId, int|string|null $coinPrice = null)
+    {
+        $professional = $request?->user()?->professional;
+
+        if (!$professional) {
+            return response()->json([
+                'error' => __('Not found!'),
+            ], 404);
+        }
+
+        $coinPrice ??= $request->integer('coinPrice');
+
+        if (!$coinPrice) {
+            return response()->json([
+                'error' => __('Coin price confirmation is required')
+            ], 422);
+        }
+
+        $project = Project::query()
+            ->activeOnly()
+            ->where('id', $projectId)
+            ->with([
+                'professionalProject' => fn (\Illuminate\Database\Eloquent\Relations\HasMany $q) => $q->where('professional_id', $professional?->id)
+            ])
+            ->first();
+
+        if (!$project) {
+            return response()->json([
+                'error' => __('Not found record!'),
+            ], 404);
+        }
+
+        if ($project?->professionalProject?->first()) {
+            return response()->json([
+                'message' => __('You have already released this project before.'),
+                'params' => [
+                    'professional_id' => $professional?->id,
+                    'project_id' => $project?->id,
+                    'coinPrice' => $coinPrice,
+                ],
+            ], 422);
+        }
+
+        if (!$project->enterCoinIsValid($coinPrice)) {
+            return response()->json([
+                'message' => __('Invalid coin price confirmation.'),
+                'params' => [
+                    'professional_id' => $professional?->id,
+                    'project_id' => $project?->id,
+                    'coinPrice' => $coinPrice,
+                ],
+            ], 422);
+        }
+
+        // Aqui verificar se o profissional tem saldo para liberar o projeto
+
+        $professionalProject = ProfessionalProject::firstOrCreate([
+            'professional_id' => $professional?->id,
+            'project_id' => $project?->id,
+        ]);
+
+        return response()->json(
+            array_merge(
+                [
+                    'project' => $project,
+                ],
+                $professionalProject?->toArray() ?? [],
+            )
+        );
+    }
+
     public function showProfessionalProject(Request $request, int|string $projectId)
     {
         $professional = $request?->user()?->professional;

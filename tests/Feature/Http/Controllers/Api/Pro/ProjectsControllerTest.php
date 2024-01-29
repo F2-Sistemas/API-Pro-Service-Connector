@@ -143,9 +143,151 @@ class ProjectsControllerTest extends TestCase
         );
     }
 
+    /**
+     * @test
+     */
+    public function testProductRelease(): void
+    {
+        $coinPrice = rand(10, 90);
+
+        $project = Project::factory()->createOne([
+            'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
+            'max_of_bids' => 5,
+            'total_of_bids' => 2,
+            'coin_price' => $coinPrice,
+        ]);
+
+        $user = User::factory()->createOne();
+
+        $professional = Professional::factory()->createOne([
+            'user_id' => $user?->id,
+        ]);
+
+        $this->assertTrue(boolval($professional));
+
+        $coinValue = $coinPrice;
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('api.public.professional.products.release', [$project?->id, $coinValue]));
+
+        $response->assertStatus(200);
+
+        $response->assertJson(
+            fn (AssertableJson $json) => $json
+                ->whereType('project.id', 'integer')
+                ->whereType('project.description', 'string')
+                ->etc()
+        );
+
+        $professionalProjectExists = ProfessionalProject::query()
+            ->where('professional_id', $professional?->id)
+            ->where('project_id', $project?->id)->exists();
+
+        $this->assertTrue(boolval($professionalProjectExists));
+    }
+
+    /**
+     * @test
+     * @dataProvider expiredProductprovider
+     */
+    public function testProductReleaseExpiration(
+        array $data,
+        int $assertStatus,
+        array|null $assertJson = null,
+        int|null $coinPrice = null,
+        int|null $assertCoinPrice = null,
+    ): void {
+        $coinPrice ??= rand(10, 90);
+
+        $project = Project::factory()->createOne(array_merge(
+            [
+                'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
+                'coin_price' => $coinPrice,
+            ],
+            $data,
+        ));
+
+        $user = User::factory()->createOne();
+
+        $professional = Professional::factory()->createOne([
+            'user_id' => $user?->id,
+        ]);
+
+        $this->assertTrue(boolval($professional));
+
+        $coinValue = $assertCoinPrice ?? $coinPrice;
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('api.public.professional.products.release', [$project?->id, $coinValue]));
+
+        $response->assertStatus($assertStatus);
+
+        if (!$assertJson) {
+            return;
+        }
+
+        $assertJson = array_map(function ($item) {
+            if (!is_callable($item)) {
+                return $item;
+            }
+
+            return call_user_func($item);
+        }, $assertJson);
+
+        $response->assertJson($assertJson);
+    }
+
+    public static function expiredProductprovider(): array
+    {
+        return [
+            [
+                'data' => [
+                    'max_of_bids' => 5,
+                    'total_of_bids' => 2,
+                    'expires_in' => now()->subMinutes(5),
+                ],
+                'assertStatus' => 404,
+                'assertJson' => ['error' => fn () => __('Not found record!')],
+                'coinPrice' => null,
+            ],
+            [
+                'data' => [
+                    'max_of_bids' => 5,
+                    'total_of_bids' => 5,
+                    'expires_in' => now()->addDays(1),
+                ],
+                'assertStatus' => 404,
+                'assertJson' => ['error' => fn () => __('Not found record!')],
+                'coinPrice' => null,
+            ],
+            [
+                'data' => [
+                    'max_of_bids' => 5,
+                    'total_of_bids' => 2,
+                    'expires_in' => now()->addDays(1),
+                ],
+                'assertStatus' => 200,
+                'assertJson' => null,
+                'coinPrice' => null,
+            ],
+            [
+                'data' => [
+                    'max_of_bids' => 5,
+                    'total_of_bids' => 2,
+                    'expires_in' => now()->addDays(1),
+                ],
+                'assertStatus' => 422,
+                'assertJson' => [
+                    'message' => fn () => __('Invalid coin price confirmation.'),
+                ],
+                'coinPrice' => 104,
+                'assertCoinPrice' => 110,
+            ],
+        ];
+    }
+
     //TODO:
-    // - SUCCESS: release project (need projectId, UserId, coinToPay[need be equal in project or -discount])
-    // - FAIL: expired project show
-    // - FAIL: not released project show
-    // - FAIL: exceded total_of_bids project show
+    // - Debit coinValue from the professional's balance when release project info
 }
