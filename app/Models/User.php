@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Builder;
 use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\Models\User
@@ -164,5 +165,15 @@ class User extends Authenticatable
             $phoneNumber,
             $activeOnly,
         );
+    }
+
+    /**
+     * Get the professional associated with the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function professional(): HasOne
+    {
+        return $this->hasOne(Professional::class);
     }
 }
