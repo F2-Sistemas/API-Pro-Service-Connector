@@ -43,6 +43,7 @@ class Project extends Model
         'country_code',
         'city_code',
         'zip_code',
+        'prioritize_qualified_professionals',
     ];
 
     /**
@@ -52,6 +53,7 @@ class Project extends Model
      */
     protected $hidden = [
         'owner_id',
+        'prioritize_qualified_professionals',
     ];
 
     /**
@@ -67,6 +69,7 @@ class Project extends Model
         'coin_price' => 'integer',
         'percent_discount_applied' => 'integer',
         'promoted' => 'boolean',
+        'prioritize_qualified_professionals' => 'boolean',
     ];
 
     public function scopeActiveOnly(Builder $query)

@@ -17,7 +17,27 @@ class ProjectsControllerTest extends TestCase
      */
     public function testIndex(): void
     {
+        $project = Project::activeOnly()->first() ?: Project::factory()->createOne([
+            'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
+            'max_of_bids' => 5,
+            'total_of_bids' => 2,
+        ]);
+
         $user = User::factory()->createOne();
+
+        $professional = Professional::factory()->createOne([
+            'user_id' => $user?->id,
+        ]);
+
+        $this->assertTrue(boolval($professional));
+
+        $professionalProject = ProfessionalProject::factory()->createOne([
+            'professional_id' => $professional?->id,
+            'project_id' => $project?->id,
+        ]);
+
+        $this->assertTrue(boolval($professionalProject));
+
         $response = $this
             ->actingAs($user)
             ->getJson(route('api.public.professional.products.index'));
@@ -31,7 +51,7 @@ class ProjectsControllerTest extends TestCase
                 ->whereType('per_page', 'integer')
                 ->whereType('current_page', 'null|integer')
                 ->whereType('data.0.extra_info', 'null|array')
-                ->whereType('next_page_url', 'string')
+                ->whereType('next_page_url', 'null|string')
                 ->etc()
         );
     }

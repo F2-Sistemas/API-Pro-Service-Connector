@@ -12,6 +12,13 @@ class ProjectsController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Project::query();
+        $professional = $request?->user()?->professional;
+
+        if (!$professional) {
+            $query = $query?->whereId(0);
+        }
+
         $perPage = $request->input('per_page') ?: $request->input('perPage');
         $perPage = filter_var($perPage, FILTER_VALIDATE_INT) && $perPage > 0 ? intval($perPage) : 20;
         $urgentOnly = $request->boolean('urgentOnly');
@@ -20,8 +27,7 @@ class ProjectsController extends Controller
             array_filter(explode(',', $categories), fn ($item) => filter_var($item, FILTER_VALIDATE_INT))
             : null;
 
-        $query = Project::query()
-            ->activeOnly()
+        $query = $query->activeOnly()
             ->when($urgentOnly, fn (Builder $q) => $q->where('urgent', true))
             ->when($categories, fn (Builder $q, $categoryIds) => $q->whereIn('project_category_id', $categoryIds));
 
