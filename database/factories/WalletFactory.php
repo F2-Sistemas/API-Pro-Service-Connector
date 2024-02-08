@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,7 @@ class WalletFactory extends Factory
             'name' => str('My wallet')->append(' ')->append(fake()->word())->replace(['.', ','], ''),
             'short_description' => fake()->words(4, true),
             'main' => fake()->boolean(90),
+            'user_id' => User::factory(),
         ];
     }
 }

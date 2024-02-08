@@ -16,8 +16,12 @@ return new class() extends Migration {
             $table->string('name')->index();
             $table->string('short_description')->nullable();
             $table->boolean('main')->index()->nullable();
+            $table->unsignedBigInteger('user_id')->index();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('user_id')->references('id')
+                ->on('users')->onDelete('cascade'); // cascade|set null
 
             $table->index(['id']);
             $table->index(['deleted_at']);

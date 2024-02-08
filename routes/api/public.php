@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Pro\ProjectsController;
+use App\Http\Controllers\Api\Pro\WalletsController;
 
 Route::prefix('professional')
     ->name('professional.')
@@ -15,5 +16,10 @@ Route::prefix('professional')
             Route::get('/show/{projectId}', [ProjectsController::class, 'showOpenProject'])->name('show');
             Route::get('/released/{projectId}', [ProjectsController::class, 'showProfessionalProject'])
                 ->name('released');
+        });
+
+        Route::prefix('wallets')->name('wallets.')->group(function () {
+            Route::get('/', [WalletsController::class, 'index'])->name('index');
+            Route::get('/show/{walletUuid}', [WalletsController::class, 'show'])->name('show');
         });
     });

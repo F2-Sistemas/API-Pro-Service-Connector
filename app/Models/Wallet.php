@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Wallet extends Model
 {
@@ -32,6 +33,7 @@ class Wallet extends Model
         'name',
         'short_description',
         'main',
+        'user_id',
     ];
 
     /**
@@ -72,5 +74,15 @@ class Wallet extends Model
     public function newUniqueId()
     {
         return Str::uuid()->toString();
+    }
+
+    /**
+     * Get the user that owns the Wallet
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

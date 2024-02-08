@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Builder;
 use Propaganistas\LaravelPhone\Casts\RawPhoneNumberCast;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * App\Models\User
@@ -175,5 +176,15 @@ class User extends Authenticatable
     public function professional(): HasOne
     {
         return $this->hasOne(Professional::class);
+    }
+
+    /**
+     * Get all of the wallets for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function wallets(): HasMany
+    {
+        return $this->hasMany(Wallet::class);
     }
 }
