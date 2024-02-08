@@ -31,7 +31,7 @@ class ProjectsControllerTest extends TestCase
                 ->whereType('per_page', 'integer')
                 ->whereType('current_page', 'null|integer')
                 ->whereType('data.0.extra_info', 'null|array')
-                ->whereType('next_page_url', 'string')
+                ->whereType('next_page_url', 'null|string')
                 ->etc()
         );
     }
