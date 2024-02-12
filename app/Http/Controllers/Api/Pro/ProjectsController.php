@@ -43,7 +43,11 @@ class ProjectsController extends Controller
             ->where('id', $projectId)
             ->first();
 
-        abort_unless($project, 404);
+        if (!$project) {
+            return response()->json([
+                'error' => __('Not found!'),
+            ], 404);
+        }
 
         return response()->json($project);
     }
@@ -65,8 +69,50 @@ class ProjectsController extends Controller
             ->whereHas('project')
             ->first();
 
-        abort_unless($professionalProject, 404);
+        if (!$professionalProject) {
+            return response()->json([
+                'error' => __('Not found!'),
+            ], 404);
+        }
 
         return response()->json($professionalProject);
+    }
+
+    public function releaseProject(Request $request, null|int|string $projectId = null)
+    {
+        $projectId ??= $request->input('projectId');
+
+        $request->merge([
+            'projectId' => $projectId,
+        ]);
+
+        $request->validate([
+            'projectId' => 'required|exists:App\Models\Project,id',
+            // 'wallet_uuid' => 'required|exists:App\Models\Wallet,uuid', // TODO
+            // 'project_price' => 'required|exists:App\Models\Wallet,uuid', // TODO
+        ]);
+
+        $professional = $request?->user()?->professional;
+
+        if (!$professional) {
+            return response()->json([
+                'error' => __('Not found!'),
+            ], 404);
+        }
+
+        $project = Project::query()
+            ->activeOnly()
+            ->where('id', $projectId)
+            ->first();
+
+        if (!$project) {
+            return response()->json([
+                'error' => __('Not found!'),
+            ], 404);
+        }
+
+        return response()->json([
+            'project' => $project,
+        ]);
     }
 }

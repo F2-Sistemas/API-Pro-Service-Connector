@@ -34,6 +34,7 @@ class Wallet extends Model
         'short_description',
         'main',
         'user_id',
+        'gold_coins',
     ];
 
     /**
@@ -52,6 +53,7 @@ class Wallet extends Model
      */
     protected $casts = [
         'main' => 'boolean',
+        'gold_coins' => 'integer',
     ];
 
     /**
@@ -84,5 +86,32 @@ class Wallet extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function subtractFromWallet(string $type, int $valueToSubtract): bool
+    {
+        $attribute = match ($type) {
+            'gold_coins', 'gold' => 'gold_coins',
+            default => null,
+        };
+
+        if (!$attribute) {
+            return false;
+        }
+
+        $currentBalance = $this->{$attribute} ?? 0;
+
+        if (
+            !$currentBalance
+            || $currentBalance <= 0
+            || $valueToSubtract <= 0
+            || $currentBalance < $valueToSubtract
+        ) {
+            return false;
+        }
+
+        $result = ($currentBalance >= $valueToSubtract) && $this->decrement($attribute, $valueToSubtract);
+
+        return boolval($result);
     }
 }

@@ -18,6 +18,16 @@ class ProjectsControllerTest extends TestCase
     public function testIndex(): void
     {
         $user = User::factory()->createOne();
+
+        if (!Project::query()->activeOnly()->count()) {
+            Project::factory(4)->create([
+                'status' => ProjectStatus::OPEN_TO_PROPOSALS,
+                'max_of_bids' => 5,
+                'total_of_bids' => 1,
+                'expires_in' => now()->addDays(7),
+            ]);
+        }
+
         $response = $this
             ->actingAs($user)
             ->getJson(route('api.public.professional.products.index'));
@@ -39,7 +49,7 @@ class ProjectsControllerTest extends TestCase
     /**
      * @test
      */
-    public function testProductShow(): void
+    public function testProjectShow(): void
     {
         $project = Project::factory()->createOne([
             'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
@@ -52,7 +62,6 @@ class ProjectsControllerTest extends TestCase
             ->actingAs($user)
             ->getJson(route('api.public.professional.products.show', $project?->id));
 
-        // $response->dd();
         $response->assertStatus(200);
 
         $response->assertJson(
@@ -66,7 +75,7 @@ class ProjectsControllerTest extends TestCase
     /**
      * @test
      */
-    public function testProductReleased(): void
+    public function testProjectReleased(): void
     {
         $project = Project::factory()->createOne([
             'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
@@ -92,6 +101,39 @@ class ProjectsControllerTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->getJson(route('api.public.professional.products.released', $project?->id));
+
+        $response->assertStatus(200);
+
+        $response->assertJson(
+            fn (AssertableJson $json) => $json
+                ->whereType('project.id', 'integer')
+                ->whereType('project.description', 'string')
+                ->etc()
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function testReleaseProject()
+    {
+        $project = Project::factory()->createOne([
+            'status' => ProjectStatus::OPEN_TO_PROPOSALS?->value,
+            'max_of_bids' => 5,
+            'total_of_bids' => 2,
+        ]);
+
+        $user = User::factory()->createOne();
+
+        $professional = Professional::factory()->createOne([
+            'user_id' => $user?->id,
+        ]);
+
+        $this->assertTrue(boolval($professional));
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('api.public.professional.products.release', $project?->id));
 
         $response->assertStatus(200);
 

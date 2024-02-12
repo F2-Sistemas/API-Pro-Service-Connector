@@ -16,6 +16,9 @@ Route::prefix('professional')
             Route::get('/show/{projectId}', [ProjectsController::class, 'showOpenProject'])->name('show');
             Route::get('/released/{projectId}', [ProjectsController::class, 'showProfessionalProject'])
                 ->name('released');
+
+            Route::get('/release/{projectId}', [ProjectsController::class, 'releaseProject'])
+                ->name('release');
         });
 
         Route::prefix('wallets')->name('wallets.')->group(function () {
