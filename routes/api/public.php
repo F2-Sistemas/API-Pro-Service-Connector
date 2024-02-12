@@ -17,12 +17,18 @@ Route::prefix('professional')
             Route::get('/released/{projectId}', [ProjectsController::class, 'showProfessionalProject'])
                 ->name('released');
 
-            Route::get('/release/{projectId}', [ProjectsController::class, 'releaseProject'])
+            // Route::get('/release/{projectId}', [ProjectsController::class, 'releaseProject'])
+            //     ->name('release');
+
+            Route::get('/release/{projectId}/{coinPrice?}', [ProjectsController::class, 'projectRelease'])
                 ->name('release');
         });
 
         Route::prefix('wallets')->name('wallets.')->group(function () {
             Route::get('/', [WalletsController::class, 'index'])->name('index');
             Route::get('/show/{walletUuid}', [WalletsController::class, 'show'])->name('show');
+        });
+        Route::prefix('category')->name('category.')->group(function () {
+            Route::get('/', [ProjectsController::class, 'categoryIndex'])->name('index');
         });
     });

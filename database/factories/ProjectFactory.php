@@ -54,6 +54,7 @@ class ProjectFactory extends Factory
                 ...range(10, 50),
             ]) ?: null,
             'promoted' => fake()->boolean(20),
+            'prioritize_qualified_professionals' => fake()->boolean(20),
             'country_code' => 'BR',
             'city_code' => null,
             'zip_code' => fake()->regexify('0([1-9]){7}'),

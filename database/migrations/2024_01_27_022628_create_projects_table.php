@@ -29,6 +29,7 @@ return new class() extends Migration {
             $table->string('city_code')->nullable()->index();
             $table->string('zip_code')->nullable()->index();
             $table->boolean('promoted')->nullable()->index();
+            $table->boolean('prioritize_qualified_professionals')->nullable()->default(false)->index();
             $table->timestamps();
             $table->softDeletes();
 
